@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import PasswordInput from '../components/PasswordInput'
 import './auth.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -105,15 +106,14 @@ function Signup() {
 
           <div className="auth-field">
             <label htmlFor="password">Password</label>
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               autoComplete="new-password"
               placeholder="At least 8 characters"
               value={form.password}
               onChange={handleChange}
-              className={errors.password ? 'has-error' : ''}
+              hasError={Boolean(errors.password)}
             />
             {errors.password && (
               <span className="field-error">{errors.password}</span>
@@ -122,15 +122,14 @@ function Signup() {
 
           <div className="auth-field">
             <label htmlFor="confirmPassword">Retype password</label>
-            <input
+            <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
               autoComplete="new-password"
               placeholder="Re-enter your password"
               value={form.confirmPassword}
               onChange={handleChange}
-              className={errors.confirmPassword ? 'has-error' : ''}
+              hasError={Boolean(errors.confirmPassword)}
             />
             {errors.confirmPassword && (
               <span className="field-error">{errors.confirmPassword}</span>

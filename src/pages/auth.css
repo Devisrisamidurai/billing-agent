@@ -106,6 +106,46 @@
   color: var(--auth-error);
 }
 
+/* Password field with show/hide toggle */
+.password-wrap {
+  position: relative;
+  display: flex;
+}
+
+.password-wrap input {
+  width: 100%;
+  padding-right: 46px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  color: var(--auth-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.password-toggle:hover {
+  color: var(--ups-brown);
+  background: rgba(255, 181, 0, 0.15);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--ups-gold);
+  outline-offset: 1px;
+}
+
 .auth-link-row {
   display: flex;
   justify-content: flex-end;

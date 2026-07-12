@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import PasswordInput from '../components/PasswordInput'
 import './auth.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -58,15 +59,14 @@ function Login() {
 
           <div className="auth-field">
             <label htmlFor="password">Password</label>
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               autoComplete="current-password"
               placeholder="Enter your password"
               value={form.password}
               onChange={handleChange}
-              className={errors.password ? 'has-error' : ''}
+              hasError={Boolean(errors.password)}
             />
             {errors.password && (
               <span className="field-error">{errors.password}</span>

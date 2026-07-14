@@ -57,7 +57,7 @@ function Signup() {
         password: form.password,
         confirmPassword: form.confirmPassword,
       })
-      navigate('/login')
+      navigate('/login?registered=true')
     } catch (err) {
       const data = err.response?.data
       if (data?.fieldErrors) {

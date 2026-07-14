@@ -27,7 +27,7 @@ function Sidebar({ mobileOpen, onCloseMobile }) {
   }, [conversations])
 
   const handleNewChat = useCallback(() => {
-    navigate('/chat')
+    navigate('/chat', { state: { reset: Date.now() } })
     onCloseMobile?.()
   }, [navigate, onCloseMobile])
 

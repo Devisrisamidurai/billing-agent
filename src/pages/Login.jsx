@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import PasswordInput from '../components/PasswordInput'
 import { useAuth } from '../context/AuthContext'
 import { DEMO_USER, USE_MOCKS } from '../api/mocks'
@@ -10,6 +10,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 function Login() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const justRegistered = searchParams.get('registered') === 'true'
   const { login } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
@@ -60,6 +62,7 @@ function Login() {
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
+          {justRegistered && <div className="auth-success">Account created successfully! Please log in.</div>}
           {errors.form && <div className="auth-alert">{errors.form}</div>}
           {USE_MOCKS && (
             <div className="auth-demo-hint">

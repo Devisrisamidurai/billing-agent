@@ -1,14 +1,19 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import PasswordInput from '../components/PasswordInput'
+import { useAuth } from '../context/AuthContext'
+import { DEMO_USER, USE_MOCKS } from '../api/mocks'
 import './auth.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { login } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -24,13 +29,26 @@ function Login() {
     return next
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const next = validate()
     setErrors(next)
     if (Object.keys(next).length > 0) return
-    // Frontend-only: no backend call yet. Continue to the app screen.
-    navigate('/simulator')
+    setSubmitting(true)
+    try {
+      await login({ email: form.email.trim(), password: form.password })
+      const to = location.state?.from?.pathname || '/dashboard'
+      navigate(to, { replace: true })
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        (err.response?.status === 401
+          ? 'Invalid email or password.'
+          : 'Unable to log in. Please try again.')
+      setErrors({ form: message })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -42,6 +60,13 @@ function Login() {
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
+          {errors.form && <div className="auth-alert">{errors.form}</div>}
+          {USE_MOCKS && (
+            <div className="auth-demo-hint">
+              <strong>Demo mode</strong> — sign in with{' '}
+              <code>{DEMO_USER.email}</code> / <code>{DEMO_USER.password}</code>
+            </div>
+          )}
           <div className="auth-field">
             <label htmlFor="email">Email address</label>
             <input
@@ -79,8 +104,8 @@ function Login() {
             </button>
           </div>
 
-          <button type="submit" className="auth-submit">
-            Log In
+          <button type="submit" className="auth-submit" disabled={submitting}>
+            {submitting ? 'Signing in…' : 'Log In'}
           </button>
         </form>
 

@@ -106,6 +106,32 @@
   color: var(--auth-error);
 }
 
+.auth-alert {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdecea;
+  border: 1px solid #f5c6c0;
+  color: var(--auth-error);
+  font-size: 13px;
+}
+
+.auth-demo-hint {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fffaf0;
+  border: 1px solid var(--ups-gold);
+  color: var(--ups-brown);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.auth-demo-hint code {
+  background: rgba(52, 27, 20, 0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
 /* Password field with show/hide toggle */
 .password-wrap {
   position: relative;

@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import PasswordInput from '../components/PasswordInput'
+import { useAuth } from '../context/AuthContext'
 import './auth.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function Signup() {
   const navigate = useNavigate()
+  const { signup } = useAuth()
   const [form, setForm] = useState({
     name: '',
     accessKey: '',
@@ -15,6 +17,7 @@ function Signup() {
     confirmPassword: '',
   })
   const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -40,13 +43,35 @@ function Signup() {
     return next
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const next = validate()
     setErrors(next)
     if (Object.keys(next).length > 0) return
-    // Frontend-only: no backend call yet. Send the user to log in.
-    navigate('/login')
+    setSubmitting(true)
+    try {
+      await signup({
+        name: form.name.trim(),
+        accessKey: form.accessKey.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      })
+      navigate('/login')
+    } catch (err) {
+      const data = err.response?.data
+      if (data?.fieldErrors) {
+        setErrors((prev) => ({ ...prev, ...data.fieldErrors }))
+      } else {
+        setErrors({
+          form:
+            data?.message ||
+            'Unable to create your account. Please try again.',
+        })
+      }
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -58,6 +83,7 @@ function Signup() {
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
+          {errors.form && <div className="auth-alert">{errors.form}</div>}
           <div className="auth-field">
             <label htmlFor="name">Full name</label>
             <input
@@ -136,8 +162,8 @@ function Signup() {
             )}
           </div>
 
-          <button type="submit" className="auth-submit">
-            Create Account
+          <button type="submit" className="auth-submit" disabled={submitting}>
+            {submitting ? 'Creating…' : 'Create Account'}
           </button>
         </form>
 

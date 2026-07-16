@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { clarify, simulate } from '../api/simulate'
+import { explain } from '../api/explain'
 import { getConversationMessages } from '../api/conversations'
 import ResultCard from '../components/ResultCard'
 import './chat.css'
@@ -8,6 +9,18 @@ import './chat.css'
 // The demo tenant contract. Real deployments would resolve this from the
 // authenticated user's active contract.
 const CONTRACT_ID = 'CTR-001'
+
+// Keywords that indicate an explain/invoice question (RAG) vs a simulation question
+const EXPLAIN_KEYWORDS = [
+  'why', 'charged', 'invoice', 'explain', 'surcharge', 'fee',
+  'billing', 'payment', 'contract', 'agreement', 'terms',
+  'how does', 'what is', 'what are', 'tell me about', 'pricing program',
+]
+
+function isExplainQuery(query) {
+  const lower = query.toLowerCase()
+  return EXPLAIN_KEYWORDS.some((kw) => lower.includes(kw))
+}
 
 let localIdSeq = 0
 const nextId = () => `local-${Date.now()}-${localIdSeq++}`
@@ -112,12 +125,31 @@ function ChatView({ routeId }) {
       ])
       setPending(true)
       try {
-        const response = await simulate({
-          contractId: CONTRACT_ID,
-          naturalLanguageQuery: query,
-          conversationId: conversationId ?? undefined,
-        })
-        applyResponse(response)
+        if (isExplainQuery(query)) {
+          // RAG flow — factual question about charges/contracts
+          const explainResponse = await explain({
+            customerId: CONTRACT_ID,
+            question: query,
+          })
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: nextId(),
+              role: 'assistant',
+              content: explainResponse.explanation,
+              sources: explainResponse.sources,
+              confidenceLevel: explainResponse.confidenceLevel,
+            },
+          ])
+        } else {
+          // Simulation flow — what-if projections
+          const response = await simulate({
+            contractId: CONTRACT_ID,
+            naturalLanguageQuery: query,
+            conversationId: conversationId ?? undefined,
+          })
+          applyResponse(response)
+        }
       } catch {
         setError('Request failed. Please try again.')
       } finally {

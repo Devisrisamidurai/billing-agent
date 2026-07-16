@@ -15,32 +15,37 @@ function ResultCard({ result, disclaimer }) {
     explanation,
   } = result
 
+  const hasNumbers = currentInvoiceTotal != null && projectedInvoiceTotal != null
   const isSaving = estimatedSavings > 0
 
   return (
     <div className="result-card">
       {explanation && <p className="result-card__text">{explanation}</p>}
 
-      <MiniComparisonChart
-        current={currentInvoiceTotal}
-        projected={projectedInvoiceTotal}
-      />
+      {hasNumbers && (
+        <MiniComparisonChart
+          current={currentInvoiceTotal}
+          projected={projectedInvoiceTotal}
+        />
+      )}
 
-      <div className="result-card__stats">
-        <span
-          className={`result-badge ${isSaving ? 'result-badge--save' : 'result-badge--increase'}`}
-        >
-          {isSaving ? 'Saves ' : 'Increase '}
-          {formatMoney(Math.abs(estimatedSavings))}
-          {savingsPercentage != null &&
-            ` (${formatPercent(savingsPercentage, { sign: true })})`}
-        </span>
-        {confidenceLevel && (
-          <span className={`confidence-pill confidence-pill--${confidenceLevel.toLowerCase()}`}>
-            {confidenceLevel} confidence
+      {hasNumbers && estimatedSavings != null && (
+        <div className="result-card__stats">
+          <span
+            className={`result-badge ${isSaving ? 'result-badge--save' : 'result-badge--increase'}`}
+          >
+            {isSaving ? 'Saves ' : 'Increase '}
+            {formatMoney(Math.abs(estimatedSavings))}
+            {savingsPercentage != null &&
+              ` (${formatPercent(savingsPercentage, { sign: true })})`}
           </span>
-        )}
-      </div>
+          {confidenceLevel && (
+            <span className={`confidence-pill confidence-pill--${confidenceLevel.toLowerCase()}`}>
+              {confidenceLevel} confidence
+            </span>
+          )}
+        </div>
+      )}
 
       {disclaimer && <p className="result-card__disclaimer">{disclaimer}</p>}
     </div>

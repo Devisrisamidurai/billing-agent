@@ -115,6 +115,15 @@
   font-size: 13px;
 }
 
+.auth-success {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  color: #2e7d32;
+  font-size: 13px;
+}
+
 .auth-demo-hint {
   padding: 10px 12px;
   border-radius: 8px;
@@ -141,6 +150,12 @@
 .password-wrap input {
   width: 100%;
   padding-right: 46px;
+}
+
+/* Hide Edge/Chrome native password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
 }
 
 .password-toggle {

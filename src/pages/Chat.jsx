@@ -34,6 +34,7 @@ function ChatView({ routeId }) {
   const [input, setInput] = useState(location.state?.prompt ?? '')
   const [pending, setPending] = useState(false)
   const [clarification, setClarification] = useState(null)
+  const [lastQuery, setLastQuery] = useState('')  // Track last query for clarification context
   const [error, setError] = useState(null)
   const [historyLoading, setHistoryLoading] = useState(Boolean(routeId))
 
@@ -79,9 +80,8 @@ function ChatView({ routeId }) {
       // Adopt the server conversation id (first turn of a new chat).
       if (response.conversationId && response.conversationId !== conversationId) {
         setConversationId(response.conversationId)
-        if (!routeId) {
-          navigate(`/chat/${response.conversationId}`, { replace: true })
-        }
+        // Don't navigate to /chat/{id} — no conversation persistence yet.
+        // This prevents remount which would clear messages.
       }
 
       if (response.status === 'NEEDS_CLARIFICATION') {
@@ -119,6 +119,7 @@ function ChatView({ routeId }) {
       if (!query || pending) return
       setError(null)
       setInput('')
+      setLastQuery(query)  // Track for clarification context
       setMessages((prev) => [
         ...prev,
         { id: nextId(), role: 'user', content: query },
@@ -163,26 +164,12 @@ function ChatView({ routeId }) {
     async (field, value) => {
       if (pending) return
       setError(null)
-      setMessages((prev) => [
-        ...prev,
-        { id: nextId(), role: 'user', content: value },
-      ])
       setClarification(null)
-      setPending(true)
-      try {
-        const response = await clarify({
-          contractId: CONTRACT_ID,
-          conversationId: clarification.conversationId,
-          extractedParameters: { [field]: value },
-        })
-        applyResponse(response)
-      } catch {
-        setError('Request failed. Please try again.')
-      } finally {
-        setPending(false)
-      }
+      // Combine original question + clarification answer for full context
+      const combined = lastQuery ? `${lastQuery} — ${value}` : value
+      send(combined)
     },
-    [pending, clarification, applyResponse],
+    [pending, send, lastQuery],
   )
 
   const handleSubmit = (e) => {
@@ -303,7 +290,9 @@ function ChatView({ routeId }) {
 // Remount ChatView per conversation so its local state resets cleanly.
 function Chat() {
   const { conversationId: routeId } = useParams()
-  return <ChatView key={routeId ?? 'new'} routeId={routeId} />
+  const location = useLocation()
+  const resetKey = location.state?.reset || ''
+  return <ChatView key={`${routeId ?? 'new'}-${resetKey}`} routeId={routeId} />
 }
 
 export default Chat
